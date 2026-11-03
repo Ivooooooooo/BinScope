@@ -1,0 +1,693 @@
+// Detect It Easy: DiE-JS framework file
+// Don't change anything unless you're sure about what you're doing
+
+var File = PE;
+var X = PE;
+
+
+var PE_getSize = PE.getSize,
+    PE_fileSize = PE_getSize();
+
+/**
+ * Get the cached file size.
+ * @returns {Number}
+ */
+PE.getSize = function () {
+    return PE_fileSize;
+}
+
+
+var PE_entryPointSignatures = {};
+
+/**
+ * Get the signature at an offset of the entry point.
+ * @see Binary.getSignature
+ */
+PE.getEntryPointSignature = function (nOffset, nSize) {
+    var sCacheKey = "$" + nOffset + ":" + nSize;
+
+    if (PE_entryPointSignatures[sCacheKey] === undefined) {
+        PE_entryPointSignatures[sCacheKey] = PE.getSignature(PE.nEP + nOffset, nSize);
+    }
+
+    return PE_entryPointSignatures[sCacheKey];
+}
+
+
+var PE_generalOptionsEx;
+
+/**
+ * Add console and/or administrator requirement to the general options.
+ * @returns {String}
+ */
+PE.getGeneralOptionsEx = function () {
+    if (PE_generalOptionsEx === undefined) {
+        var sResult = PE.getGeneralOptions();
+
+        if (PE.isConsole()) {
+            sResult = sResult.append("console");
+        }
+        if (/requireAdministrator/.test(PE.getManifest())) {
+            sResult = sResult.append("admin");
+        }
+        if (PE.isSignedFile()) {
+            sResult = sResult.append("signed");
+        }
+
+        PE_generalOptionsEx = sResult;
+    }
+
+    return PE_generalOptionsEx;
+}
+
+
+var PE_getImportLibraryName = PE.getImportLibraryName,
+    PE_getNumberOfImports = PE.getNumberOfImports,
+    PE_isLibraryPresent = PE.isLibraryPresent,
+    PE_numberOfImports = PE_getNumberOfImports(),
+    PE_numberOfImportFunctions,
+    PE_importLibraryNames = [],
+    PE_librarySearchResults = {};
+
+for (var n = 0; n < PE_numberOfImports; n++) {
+    PE_importLibraryNames[n] = PE_getImportLibraryName(n);
+}
+
+/**
+ * Get an import library name from the cache.
+ * @returns {String}
+ */
+PE.getImportLibraryName = function (nNumber) {
+    if (nNumber >= 0 && nNumber < PE_numberOfImports) {
+        return PE_importLibraryNames[nNumber];
+    }
+
+    return PE_getImportLibraryName(nNumber);
+}
+
+
+/**
+ * Get the cached number of imported libraries.
+ * @returns {Number}
+ */
+PE.getNumberOfImports = function () {
+    return PE_numberOfImports;
+}
+
+
+/**
+ * Get the cached total number of imported functions across all import libraries.
+ * @returns {Number}
+ */
+PE.getNumberOfImportFunctions = function () {
+    if (PE_numberOfImportFunctions === undefined) {
+        PE_numberOfImportFunctions = 0;
+
+        for (var n = 0; n < PE_numberOfImports; n++) {
+            PE_numberOfImportFunctions += PE.getNumberOfImportThunks(n);
+        }
+    }
+
+    return PE_numberOfImportFunctions;
+}
+
+
+/**
+ * Check if an imported library is present.
+ * @returns {Boolean} <code>true</code> if the library is present, otherwise <code>false</code>.
+ */
+PE.isLibraryPresent = function (sLibraryName) {
+    var sCacheKey = "$" + sLibraryName;
+
+    if (PE_librarySearchResults[sCacheKey] === undefined) {
+        PE_librarySearchResults[sCacheKey] = PE_isLibraryPresent(sLibraryName);
+    }
+
+    return PE_librarySearchResults[sCacheKey];
+}
+
+
+/**
+ * Locate the first library matching a pattern.
+ * @returns {?Array} <code>null</code> if not found, otherwise:
+ * <br><code>[-1]</code> is the number of the library;
+ * <br><code>[0]</code> is the name of the library (lower cased);
+ * <br><code>[1]</code> onwards are the captured subpatterns.
+ */
+PE.isLibraryPresentExp = function (sLibraryPattern) {
+    var aMatch = null;
+    for (var n = 0; n < PE_numberOfImports; n++) {
+        var sLibraryName = PE_importLibraryNames[n];
+
+        aMatch = sLibraryName.match(sLibraryPattern);
+        if (aMatch) {
+            aMatch[-1] = n;
+            aMatch[0] = sLibraryName.toLowerCase();
+            break;
+        }
+    }
+
+    return aMatch;
+}
+
+
+var PE_getExportFunctionName = PE.getExportFunctionName,
+    PE_getNextNamedExportFunctionIndex = PE.getNextNamedExportFunctionIndex,
+    PE_numberOfExportFunctions = PE.getNumberOfExportFunctions(),
+    PE_numberOfNamedExportFunctions = 0,
+    PE_exportFunctionNames = {},
+    PE_namedExportFunctionNames = [],
+    PE_namedExportFunctionIndexes = [],
+    PE_exportFunctionIndexes = {},
+    PE_exportFunctionSearchBufferParts = [],
+    PE_exportFunctionSearchOffsets = {},
+    PE_exportFunctionSearchBufferOffset = 1;
+
+// Keep newer databases usable with engines that predate the native named-slot
+// iterator. Updated engines take the native path; this compatibility path is
+// intentionally equivalent to the former slot walk.
+if (PE_getNextNamedExportFunctionIndex === undefined) {
+    PE_getNextNamedExportFunctionIndex = function (nPreviousIndex) {
+        for (var nIndex = Math.max(-1, nPreviousIndex) + 1;
+            nIndex < PE_numberOfExportFunctions; nIndex++) {
+            if (PE_getExportFunctionName(nIndex)) {
+                return nIndex;
+            }
+        }
+
+        return -1;
+    }
+}
+
+var PE_namedExportFunctionIndex = PE_getNextNamedExportFunctionIndex(-1);
+
+while (PE_namedExportFunctionIndex !== -1) {
+    var sExportFunctionName = PE_getExportFunctionName(PE_namedExportFunctionIndex),
+        sExportFunctionNameLowerCase = sExportFunctionName.toLowerCase();
+
+    PE_exportFunctionNames[PE_namedExportFunctionIndex] = sExportFunctionName;
+    PE_namedExportFunctionNames[PE_numberOfNamedExportFunctions] = sExportFunctionName;
+    PE_namedExportFunctionIndexes[PE_numberOfNamedExportFunctions] = PE_namedExportFunctionIndex;
+    PE_exportFunctionIndexes["$" + sExportFunctionName] = PE_namedExportFunctionIndex;
+    PE_exportFunctionSearchBufferParts[PE_numberOfNamedExportFunctions] = sExportFunctionNameLowerCase;
+    PE_exportFunctionSearchOffsets["$" + PE_exportFunctionSearchBufferOffset] = PE_namedExportFunctionIndex;
+    PE_exportFunctionSearchBufferOffset += sExportFunctionNameLowerCase.length + 1;
+    PE_numberOfNamedExportFunctions++;
+    PE_namedExportFunctionIndex = PE_getNextNamedExportFunctionIndex(PE_namedExportFunctionIndex);
+}
+
+var PE_exportFunctionSearchBuffer = "\0" + PE_exportFunctionSearchBufferParts.join("\0") + "\0";
+PE_exportFunctionSearchBufferParts = undefined;
+
+/**
+ * Get an export function name from the cache.
+ * @returns {String}
+ */
+PE.getExportFunctionName = function (nNumber) {
+    if (nNumber >= 0 && nNumber < PE_numberOfExportFunctions) {
+        var sExportFunctionName = PE_exportFunctionNames[nNumber];
+        return sExportFunctionName !== undefined ? sExportFunctionName : "";
+    }
+
+    return PE_getExportFunctionName(nNumber);
+}
+
+
+/**
+ * Get the cached number of export functions.
+ * @returns {Number}
+ */
+PE.getNumberOfExportFunctions = function () {
+    return PE_numberOfExportFunctions;
+}
+
+
+/**
+ * Get the cached number of named export functions.
+ * @returns {Number}
+ */
+PE.getNumberOfNamedExportFunctions = function () {
+    return PE_numberOfNamedExportFunctions;
+}
+
+
+/**
+ * Get the original export slot index for a named-export index.
+ * @returns {Number} <code>-1</code> if the index is invalid.
+ */
+PE.getNamedExportFunctionIndex = function (nNumber) {
+    if (nNumber >= 0 && nNumber < PE_numberOfNamedExportFunctions) {
+        return PE_namedExportFunctionIndexes[nNumber];
+    }
+
+    return -1;
+}
+
+
+/**
+ * Get an export name from the compact named-export cache.
+ * @returns {String}
+ */
+PE.getNamedExportFunctionName = function (nNumber) {
+    if (nNumber >= 0 && nNumber < PE_numberOfNamedExportFunctions) {
+        return PE_namedExportFunctionNames[nNumber];
+    }
+
+    return "";
+}
+
+
+/**
+ * Check if an export function is present.
+ * @returns {Boolean} <code>true</code> if the export function is present, otherwise <code>false</code>.
+ */
+PE.isExportFunctionPresent = function (sExportFunctionName) {
+    return PE_exportFunctionIndexes["$" + sExportFunctionName] !== undefined;
+}
+
+
+/**
+ * Locate the first export function matching a pattern using a fast case-insensitive anchor.
+ * @returns {?Array} <code>null</code> if not found, otherwise:
+ * <br><code>[-1]</code> is the number of the export function;
+ * <br><code>[0]</code> is the name of the export function;
+ * <br><code>[1]</code> onwards are the captured subpatterns.
+ */
+PE.isExportFunctionPresentExpFastAnchor = function (sAnchor, sExportPattern) {
+    var sAnchorLowerCase = sAnchor.toLowerCase(),
+        nSearchOffset = 1,
+        aMatch = null;
+
+    if (!sAnchorLowerCase.length) {
+        return PE.isExportFunctionPresentExp(sExportPattern);
+    }
+
+    while (true) {
+        var nAnchorOffset = PE_exportFunctionSearchBuffer.indexOf(sAnchorLowerCase, nSearchOffset);
+        if (nAnchorOffset === -1) {
+            break;
+        }
+
+        var nExportFunctionOffset = PE_exportFunctionSearchBuffer.lastIndexOf("\0", nAnchorOffset) + 1,
+            nExportFunctionEnd = PE_exportFunctionSearchBuffer.indexOf("\0", nAnchorOffset),
+            nExportFunction = PE_exportFunctionSearchOffsets["$" + nExportFunctionOffset],
+            sExportFunctionName = PE_exportFunctionNames[nExportFunction];
+
+        nSearchOffset = nExportFunctionEnd + 1;
+
+        aMatch = sExportFunctionName.match(sExportPattern);
+        if (aMatch) {
+            aMatch[-1] = nExportFunction;
+            aMatch[0] = sExportFunctionName;
+            break;
+        }
+    }
+
+    return aMatch;
+}
+
+
+/**
+ * Locate the first export function matching a pattern.
+ * @returns {?Array} <code>null</code> if not found, otherwise:
+ * <br><code>[-1]</code> is the number of the export function;
+ * <br><code>[0]</code> is the name of the export function;
+ * <br><code>[1]</code> onwards are the captured subpatterns.
+ */
+PE.isExportFunctionPresentExp = function (sExportPattern) {
+    var aMatch = null;
+    for (var n = 0; n < PE_numberOfNamedExportFunctions; n++) {
+        var sExportFunctionName = PE_namedExportFunctionNames[n];
+
+        aMatch = sExportFunctionName.match(sExportPattern);
+        if (aMatch) {
+            aMatch[-1] = PE_namedExportFunctionIndexes[n];
+            aMatch[0] = sExportFunctionName;
+            break;
+        }
+    }
+
+    return aMatch;
+}
+
+
+var PE_getNumberOfSections = PE.getNumberOfSections,
+    PE_getSectionName = PE.getSectionName,
+    PE_getSectionVirtualSize = PE.getSectionVirtualSize,
+    PE_getSectionVirtualAddress = PE.getSectionVirtualAddress,
+    PE_getSectionFileSize = PE.getSectionFileSize,
+    PE_getSectionFileOffset = PE.getSectionFileOffset,
+    PE_getSectionCharacteristics = PE.getSectionCharacteristics,
+    PE_isSectionNamePresent = PE.isSectionNamePresent,
+    PE_numberOfSections = PE_getNumberOfSections(),
+    PE_sectionNameSearchResults = {};
+
+/**
+ * The number of the last section.
+ */
+PE.nLastSection = PE_numberOfSections - 1;
+
+function Section(number, name, virtsize, rva, filesize, offset, characteristics) {
+    this.Number = number;
+    this.Name = name;
+    this.VirtualSize = virtsize;
+    this.VirtualAddress = rva;
+    this.FileSize = filesize;
+    this.FileOffset = offset;
+    this.Flags = characteristics;
+    this.Characteristics = this.Flags;
+    this.IsReadWriteExecute = this.hasFlags(0xE0000000);
+
+    this.Size = this.FileSize;
+    this.Offset = this.FileOffset;
+}
+
+
+/**
+ * Check whether all section flags in a mask are set. The unsigned
+ * comparison also handles IMAGE_SCN_MEM_WRITE (0x80000000) correctly in JS.
+ * @param {Number} mask Required PE section flags.
+ * @returns {Boolean} True when every bit in the mask is present.
+ */
+Section.prototype.hasFlags = function (mask) {
+    return ((this.Flags & mask) >>> 0) === (mask >>> 0);
+}
+
+Section.prototype.hasCharacteristics = Section.prototype.hasFlags;
+
+
+/**
+ * An array of sections, indexed by number and name (if not numeric). Members are the same as the functions.
+ * @example
+ * var rsrcSection = PE.section[".rsrc"].FileOffset;
+ */
+PE.section = [];
+for (var i = 0; i < PE_numberOfSections; i++) {
+    PE.section[i] = new Section(i,
+        PE_getSectionName(i),
+        PE_getSectionVirtualSize(i),
+        PE_getSectionVirtualAddress(i),
+        PE_getSectionFileSize(i),
+        PE_getSectionFileOffset(i),
+        PE_getSectionCharacteristics(i));
+    if (PE.section[i].Name) {
+        var name = PE.section[i].Name;
+        // Don't do numeric names, as they are always treated as an index.
+        if (+name.toString() != name) { // parseInt crashes the application if Delphi project uses diedll :(
+            PE.section[name] = PE.section[i];
+        }
+    }
+}
+
+
+// Create dummy sections for the few files that need them.
+PE.section[-1] = new Section(-1, "\0", 0, 0, 0, PE_fileSize, 0);
+if (PE.nLastSection == -1) {
+    PE.section[0] = PE.section[-1];
+}
+
+
+/**
+ * Get the cached number of sections.
+ * @returns {Number}
+ */
+PE.getNumberOfSections = function () {
+    return PE_numberOfSections;
+}
+
+
+/**
+ * Get a section name from the cache.
+ * @returns {String}
+ */
+PE.getSectionName = function (nNumber) {
+    if (nNumber >= 0 && nNumber < PE_numberOfSections) {
+        return PE.section[nNumber].Name;
+    }
+
+    return PE_getSectionName(nNumber);
+}
+
+
+/**
+ * Get a section virtual size from the cache.
+ * @returns {Number}
+ */
+PE.getSectionVirtualSize = function (nNumber) {
+    if (nNumber >= 0 && nNumber < PE_numberOfSections) {
+        return PE.section[nNumber].VirtualSize;
+    }
+
+    return PE_getSectionVirtualSize(nNumber);
+}
+
+
+/**
+ * Get a section virtual address from the cache.
+ * @returns {Number}
+ */
+PE.getSectionVirtualAddress = function (nNumber) {
+    if (nNumber >= 0 && nNumber < PE_numberOfSections) {
+        return PE.section[nNumber].VirtualAddress;
+    }
+
+    return PE_getSectionVirtualAddress(nNumber);
+}
+
+
+/**
+ * Get a section file size from the cache.
+ * @returns {Number}
+ */
+PE.getSectionFileSize = function (nNumber) {
+    if (nNumber >= 0 && nNumber < PE_numberOfSections) {
+        return PE.section[nNumber].FileSize;
+    }
+
+    return PE_getSectionFileSize(nNumber);
+}
+
+
+/**
+ * Get a section file offset from the cache.
+ * @returns {Number}
+ */
+PE.getSectionFileOffset = function (nNumber) {
+    if (nNumber >= 0 && nNumber < PE_numberOfSections) {
+        return PE.section[nNumber].FileOffset;
+    }
+
+    return PE_getSectionFileOffset(nNumber);
+}
+
+
+/**
+ * Get section characteristics from the cache.
+ * @returns {Number}
+ */
+PE.getSectionCharacteristics = function (nNumber) {
+    if (nNumber >= 0 && nNumber < PE_numberOfSections) {
+        return PE.section[nNumber].Characteristics;
+    }
+
+    return PE_getSectionCharacteristics(nNumber);
+}
+
+
+/**
+ * Check if a section name is present.
+ * @returns {Boolean} <code>true</code> if the section is present, otherwise <code>false</code>.
+ */
+PE.isSectionNamePresent = function (sSectionName) {
+    var sCacheKey = "$" + sSectionName;
+
+    if (PE_sectionNameSearchResults[sCacheKey] === undefined) {
+        PE_sectionNameSearchResults[sCacheKey] = PE_isSectionNamePresent(sSectionName);
+    }
+
+    return PE_sectionNameSearchResults[sCacheKey];
+}
+
+
+/**
+ * Locate the first section matching a pattern.
+ * @returns {?Array} <code>null</code> if not found, otherwise:
+ * <br><code>[-1]</code> is the number of the section;
+ * <br><code>[0]</code> is the name of the section;
+ * <br><code>[1]</code> onwards are the captured subpatterns.
+ */
+PE.isSectionNamePresentExp = function (sSectionPattern) {
+    var aMatch = null;
+    for (var n = 0; n < PE_numberOfSections; n++) {
+        var sSectionName = PE.section[n].Name;
+
+        aMatch = sSectionName.match(sSectionPattern);
+        if (aMatch) {
+            aMatch[-1] = n;
+            aMatch[0] = sSectionName;
+            break;
+        }
+    }
+
+    return aMatch;
+}
+
+
+var PE_getNumberOfResources = PE.getNumberOfResources,
+    PE_getResourceIdByNumber = PE.getResourceIdByNumber,
+    PE_getResourceNameByNumber = PE.getResourceNameByNumber,
+    PE_getResourceOffsetByNumber = PE.getResourceOffsetByNumber,
+    PE_getResourceSizeByNumber = PE.getResourceSizeByNumber,
+    PE_getResourceTypeByNumber = PE.getResourceTypeByNumber,
+    PE_isResourceNamePresent = PE.isResourceNamePresent,
+    PE_numberOfResources = PE_getNumberOfResources(),
+    PE_resourceNameSearchResults = {};
+
+function Resource(number, id, name, offset, size, type) {
+    this.Number = number;
+    this.Id = id;
+    this.FileName = name;
+    this.FileOffset = offset;
+    this.FileSize = size;
+    this.Type = type;
+
+    this.Name = this.FileName;
+    this.Size = this.FileSize;
+    this.Offset = this.FileOffset;
+}
+
+
+/**
+ * An array of resources, indexed by number and name (if not numeric). Members are the same as the functions.
+ * @example
+ * var packageInfoResource = PE.resource["PACKAGEINFO"].Offset;
+ */
+PE.resource = [];
+for (var i = 0; i < PE_numberOfResources; i++) {
+    PE.resource[i] = new Resource(i,
+        PE_getResourceIdByNumber(i),
+        PE_getResourceNameByNumber(i),
+        PE_getResourceOffsetByNumber(i),
+        PE_getResourceSizeByNumber(i),
+        PE_getResourceTypeByNumber(i));
+    if (PE.resource[i].Name) {
+        var name = PE.resource[i].Name;
+        // Don't do numeric names, as they are always treated as an index.
+        if ((+name).toString() != name) { // parseInt crashes the application if Delphi project uses diedll :(
+            PE.resource[name] = PE.resource[i];
+        }
+    }
+}
+
+
+/**
+ * Get the cached number of resources.
+ * @returns {Number}
+ */
+PE.getNumberOfResources = function () {
+    return PE_numberOfResources;
+}
+
+
+/**
+ * Get a resource identifier from the cache.
+ * @returns {Number}
+ */
+PE.getResourceIdByNumber = function (nNumber) {
+    if (nNumber >= 0 && nNumber < PE_numberOfResources) {
+        return PE.resource[nNumber].Id;
+    }
+
+    return PE_getResourceIdByNumber(nNumber);
+}
+
+
+/**
+ * Get a resource name from the cache.
+ * @returns {String}
+ */
+PE.getResourceNameByNumber = function (nNumber) {
+    if (nNumber >= 0 && nNumber < PE_numberOfResources) {
+        return PE.resource[nNumber].Name;
+    }
+
+    return PE_getResourceNameByNumber(nNumber);
+}
+
+
+/**
+ * Get a resource offset from the cache.
+ * @returns {Number}
+ */
+PE.getResourceOffsetByNumber = function (nNumber) {
+    if (nNumber >= 0 && nNumber < PE_numberOfResources) {
+        return PE.resource[nNumber].FileOffset;
+    }
+
+    return PE_getResourceOffsetByNumber(nNumber);
+}
+
+
+/**
+ * Get a resource size from the cache.
+ * @returns {Number}
+ */
+PE.getResourceSizeByNumber = function (nNumber) {
+    if (nNumber >= 0 && nNumber < PE_numberOfResources) {
+        return PE.resource[nNumber].FileSize;
+    }
+
+    return PE_getResourceSizeByNumber(nNumber);
+}
+
+
+/**
+ * Get a resource type from the cache.
+ * @returns {String}
+ */
+PE.getResourceTypeByNumber = function (nNumber) {
+    if (nNumber >= 0 && nNumber < PE_numberOfResources) {
+        return PE.resource[nNumber].Type;
+    }
+
+    return PE_getResourceTypeByNumber(nNumber);
+}
+
+
+/**
+ * Check if a resource name is present.
+ * @returns {Boolean} <code>true</code> if the resource is present, otherwise <code>false</code>.
+ */
+PE.isResourceNamePresent = function (sResourceName) {
+    var sCacheKey = "$" + sResourceName;
+
+    if (PE_resourceNameSearchResults[sCacheKey] === undefined) {
+        PE_resourceNameSearchResults[sCacheKey] = PE_isResourceNamePresent(sResourceName);
+    }
+
+    return PE_resourceNameSearchResults[sCacheKey];
+}
+
+
+/**
+ * Locate the first resource matching a pattern.
+ * @returns {?Array} <code>null</code> if not found, otherwise:
+ * <br><code>[-1]</code> is the number of the resource;
+ * <br><code>[0]</code> is the name of the resource;
+ * <br><code>[1]</code> onwards are the captured subpatterns.
+ */
+PE.isResourceNamePresentExp = function (sResourcePattern) {
+    var aMatch = null;
+    for (var n = 0; n < PE_numberOfResources; n++) {
+        var sResourceName = PE.resource[n].Name;
+
+        aMatch = sResourceName.match(sResourcePattern);
+        if (aMatch) {
+            aMatch[-1] = n;
+            aMatch[0] = sResourceName;
+            break;
+        }
+    }
+
+    return aMatch;
+}

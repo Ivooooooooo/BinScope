@@ -1,0 +1,18 @@
+[package]
+name = "binscope-hashing"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Streaming SHA-256, SHA-1 and MD5 hashing for BinScope"
+
+[dependencies]
+binscope-common = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+sha2 = { workspace = true }
+sha1 = { workspace = true }
+md-5 = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

@@ -1,0 +1,20 @@
+[package]
+name = "binscope-reports"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Read-only external malware report lookup by SHA-256 for BinScope"
+
+[dependencies]
+binscope-common = { workspace = true }
+binscope-hashing = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+chrono = { workspace = true }
+url = "2"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls", "gzip"] }
+
+[dev-dependencies]
+tempfile = { workspace = true }

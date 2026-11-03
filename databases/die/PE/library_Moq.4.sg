@@ -1,0 +1,17 @@
+// Detect It Easy: detection rule file
+
+// Author: DosX
+// GitHub: https://github.com/DosX-dev
+// Website: https://dosx.su
+// Telegram: @DosX_dev
+
+// https://github.com/devlooped/moq
+meta("library", "Moq");
+
+function detect() {
+    if (PE.isNetObjectPresent("Moq") && PE.isNetObjectPresent("DownloadExists")) {
+        bDetected = true;
+    }
+
+    return result();
+}

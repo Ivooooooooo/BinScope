@@ -1,0 +1,14 @@
+// Detect It Easy: detection rule file
+// Author: horsicq <horsicq@gmail.com>
+
+// https://s33.picofile.com/file/8484928734/UPXFreak_0_1.rar.html
+meta("tool", "UPXFreak");
+
+function detect() {
+    if (PE.compareEP("BE........83C601FFE60000")) {
+        sVersion = "0.1";
+        bDetected = true;
+    }
+
+    return result();
+}

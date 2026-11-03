@@ -1,0 +1,14 @@
+// Detect It Easy: detection rule file
+
+// https://guardant.com/support/developers/guardant-slk/
+meta("protector", "Guardant Stealth");
+
+function detect() {
+    if (PE.getNumberOfImports() == 1) {
+        if (PE.getImportLibraryName(0) == "NOVEX32.dll") {
+            bDetected = true;
+        }
+    }
+
+    return result();
+}

@@ -1,0 +1,27 @@
+[package]
+name = "binscope-authenticode"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Authenticode digest, PKCS#7 and Windows trust verification"
+
+[dependencies]
+serde = { workspace = true }
+sha1 = { workspace = true }
+sha2 = { workspace = true }
+thiserror = "2.0"
+binscope-pe = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_Security_Cryptography",
+    "Win32_Security_Cryptography_Catalog",
+    "Win32_Security_Cryptography_Sip",
+    "Win32_Security_WinTrust",
+] }

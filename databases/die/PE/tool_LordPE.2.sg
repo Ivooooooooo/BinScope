@@ -1,0 +1,21 @@
+// Detect It Easy: detection rule file
+// Author: BJNFNE <bjnfne@web.de>
+// Rewritten by: DosX
+
+// https://www.softpedia.com/get/Programming/File-Editors/LordPE.shtml
+// https://khurshid-hassan-khn.medium.com/backdooring-a-pe-binary-part-1-9eb9dbd914ce
+meta("tool", "LordPE");
+
+function detect() {
+    var newSecSection = PE.section[".NewSec"]
+
+    if (PE.getDosStubSize() === 0 && PE.isSignaturePresent(0x00, Math.min(0x80, PE.getSize()), "'[LordPE]'")) {
+        sOptions = "rebuilded";
+        bDetected = true;
+    } else if (newSecSection && newSecSection.IsReadWriteExecute) {
+        sOptions = "section added";
+        bDetected = true;
+    }
+
+    return result();
+}

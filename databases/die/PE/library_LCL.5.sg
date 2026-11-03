@@ -1,0 +1,23 @@
+// Detect It Easy: detection rule file
+// Author: horsicq <horsicq@gmail.com>
+
+includeScript("FPC");
+
+// https://sourceforge.net/projects/lazarus/files/
+meta("library", "LCL");
+
+function detect() {
+    if (bFPC) {
+        var searchOffset = PE.section[0].FileOffset,
+            searchEndOffset = PE.isOverlayPresent() ? PE.getOverlayOffset() : PE.getSize(),
+            searchSize = searchEndOffset - searchOffset,
+            verInfoOffset = searchSize > 0 ? PE.findSignature(searchOffset, searchSize, "'LCLVersion' ?? ?? %% '.' %%") : -1;
+
+        if (verInfoOffset != -1) {
+            sVersion = PE.getString(verInfoOffset + 12);
+            bDetected = true;
+        }
+    }
+
+    return result();
+}

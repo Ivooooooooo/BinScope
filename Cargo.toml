@@ -1,0 +1,64 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/common",
+    "crates/hashing",
+    "crates/strings",
+    "crates/file-detect",
+    "crates/pe-parser",
+    "crates/authenticode",
+    "crates/elf-mach-parser",
+    "crates/dotnet",
+    "crates/batch",
+    "crates/signatures",
+    "crates/yara-engine",
+    "crates/rules",
+    "crates/core",
+    "crates/virustotal",
+    "crates/updates",
+    "src-tauri",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+license = "MIT"
+
+[workspace.dependencies]
+binscope-common = { path = "crates/common" }
+binscope-hashing = { path = "crates/hashing" }
+binscope-strings = { path = "crates/strings" }
+binscope-file-detect = { path = "crates/file-detect" }
+binscope-pe = { path = "crates/pe-parser" }
+binscope-authenticode = { path = "crates/authenticode" }
+binscope-batch = { path = "crates/batch" }
+binscope-elfmach = { path = "crates/elf-mach-parser" }
+binscope-dotnet = { path = "crates/dotnet" }
+binscope-signatures = { path = "crates/signatures" }
+binscope-yara = { path = "crates/yara-engine" }
+binscope-rules = { path = "crates/rules" }
+binscope-core = { path = "crates/core" }
+binscope-virustotal = { path = "crates/virustotal" }
+binscope-updates = { path = "crates/updates" }
+
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0"
+chrono = { version = "0.4", default-features = false, features = ["std", "clock", "serde"] }
+sha2 = "0.10"
+sha1 = "0.10"
+md-5 = "0.10"
+goblin = "0.10"
+tempfile = "3"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 2

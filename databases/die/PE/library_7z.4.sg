@@ -1,0 +1,17 @@
+// Detect It Easy: detection rule file
+
+// Author: DosX
+// GitHub: https://github.com/DosX-dev
+// Website: https://dosx.su
+// Telegram: @DosX_dev
+
+// https://www.7-zip.org/download.html
+meta("library", "7-Zip");
+
+function detect() {
+    if (PE.isLibraryPresentExp(/^7z/) || PE.isLibraryPresentExp(/lib7z/i)) {
+        bDetected = true;
+    }
+
+    return result();
+}

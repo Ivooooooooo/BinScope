@@ -1,0 +1,16 @@
+// Detect It Easy: detection rule file
+
+// Author: DosX
+// GitHub: https://github.com/DosX-dev
+// Website: https://dosx.su
+// Telegram: @DosX_dev
+
+meta("library", "PlayStation Controller SDK");
+
+function detect() {
+    if (PE.isLibraryPresentExp(/^libscepad/i)) {
+        bDetected = true;
+    }
+
+    return result();
+}

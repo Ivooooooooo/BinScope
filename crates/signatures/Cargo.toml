@@ -1,0 +1,19 @@
+[package]
+name = "binscope-signatures"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Modular signature engine for BinScope"
+
+[dependencies]
+binscope-common = { workspace = true }
+binscope-pe = { workspace = true }
+binscope-elfmach = { workspace = true }
+binscope-strings = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

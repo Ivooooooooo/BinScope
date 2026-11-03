@@ -1,0 +1,16 @@
+[package]
+name = "binscope-dotnet"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = ".NET / CLR metadata detection for BinScope"
+
+[dependencies]
+binscope-common = { workspace = true }
+binscope-pe = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

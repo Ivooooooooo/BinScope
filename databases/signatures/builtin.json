@@ -1,0 +1,398 @@
+{
+  "schema": 1,
+  "name": "BinScope builtin signatures",
+  "version": "0.1.0",
+  "updated": "2026-10-28",
+  "license": "MIT",
+  "source": "BinScope project",
+  "signatures": [
+    {
+      "id": "packer.upx",
+      "name": "UPX",
+      "category": "packer",
+      "description": "UPX (Ultimate Packer for eXecutables) section layout or marker.",
+      "confidence": 98,
+      "any": [
+        { "kind": "section_name", "value": "UPX0" },
+        { "kind": "section_name", "value": "UPX1" },
+        { "kind": "section_name", "value": "UPX2" },
+        { "kind": "string", "value": "UPX!" },
+        { "kind": "string", "value": "UPX 3.", "extract_version": true },
+        { "kind": "string", "value": "UPX 4.", "extract_version": true }
+      ]
+    },
+    {
+      "id": "packer.mpress",
+      "name": "MPRESS",
+      "category": "packer",
+      "description": "MPRESS executable compressor.",
+      "confidence": 94,
+      "any": [
+        { "kind": "section_name", "value": ".MPRESS1" },
+        { "kind": "section_name", "value": ".MPRESS2" },
+        { "kind": "string", "value": "MPRESS1" },
+        { "kind": "string", "value": "MPRESS2" }
+      ]
+    },
+    {
+      "id": "packer.aspack",
+      "name": "ASPack",
+      "category": "packer",
+      "description": "ASPack executable compressor.",
+      "confidence": 92,
+      "any": [
+        { "kind": "section_name", "value": ".aspack" },
+        { "kind": "section_name", "value": ".adata" },
+        { "kind": "string", "value": "ASPack" }
+      ]
+    },
+    {
+      "id": "packer.pecompact",
+      "name": "PECompact",
+      "category": "packer",
+      "description": "PECompact executable compressor.",
+      "confidence": 92,
+      "any": [
+        { "kind": "section_name", "value": "pec1" },
+        { "kind": "section_name", "value": "pec2" },
+        { "kind": "string", "value": "PECompact2" },
+        { "kind": "string", "value": "PECompact3" }
+      ]
+    },
+    {
+      "id": "packer.pyinstaller",
+      "name": "PyInstaller",
+      "category": "packer",
+      "description": "PyInstaller bootloader (Python application bundle).",
+      "confidence": 90,
+      "any": [
+        { "kind": "string", "value": "PyInstaller" },
+        { "kind": "string", "value": "MEIPASS" },
+        { "kind": "string", "value": "pyi-runtime-tmpdir" }
+      ]
+    },
+    {
+      "id": "packer.autoit",
+      "name": "AutoIt",
+      "category": "packer",
+      "description": "AutoIt compiled script marker.",
+      "confidence": 95,
+      "any": [
+        { "kind": "string", "value": "AU3!EA06" },
+        { "kind": "string", "value": "AutoIt3" }
+      ]
+    },
+    {
+      "id": "protector.themida",
+      "name": "Themida / WinLicense",
+      "category": "protector",
+      "description": "Themida or WinLicense virtualizing protector markers.",
+      "confidence": 95,
+      "any": [
+        { "kind": "section_name", "value": ".themida" },
+        { "kind": "section_name", "value": ".winlice" },
+        { "kind": "string", "value": "Themida" },
+        { "kind": "string", "value": "WinLicense" }
+      ]
+    },
+    {
+      "id": "protector.vmprotect",
+      "name": "VMProtect",
+      "category": "protector",
+      "description": "VMProtect virtual machine protector.",
+      "confidence": 95,
+      "any": [
+        { "kind": "section_name", "value": ".vmp0" },
+        { "kind": "section_name", "value": ".vmp1" },
+        { "kind": "section_name", "value": ".vmp2" },
+        { "kind": "string", "value": "VMProtect" }
+      ]
+    },
+    {
+      "id": "protector.enigma",
+      "name": "Enigma Protector",
+      "category": "protector",
+      "description": "Enigma Protector section names or marker.",
+      "confidence": 92,
+      "any": [
+        { "kind": "section_name", "value": ".enigma1" },
+        { "kind": "section_name", "value": ".enigma2" },
+        { "kind": "string", "value": "Enigma protector" }
+      ]
+    },
+    {
+      "id": "protector.obsidium",
+      "name": "Obsidium",
+      "category": "protector",
+      "description": "Obsidium protector section or marker.",
+      "confidence": 90,
+      "any": [
+        { "kind": "section_name", "value": ".obsidium" },
+        { "kind": "string", "value": "Obsidium" }
+      ]
+    },
+    {
+      "id": "protector.net_reactor",
+      "name": ".NET Reactor",
+      "category": "protector",
+      "description": ".NET Reactor obfuscator/protector marker in a managed assembly.",
+      "confidence": 88,
+      "all": [{ "kind": "dotnet", "present": true }],
+      "any": [
+        { "kind": "string", "value": ".NET Reactor" },
+        { "kind": "string", "value": "NETReactor" }
+      ]
+    },
+    {
+      "id": "protector.confuser",
+      "name": "ConfuserEx",
+      "category": "protector",
+      "description": "ConfuserEx obfuscator marker in a managed assembly.",
+      "confidence": 85,
+      "all": [{ "kind": "dotnet", "present": true }],
+      "any": [
+        { "kind": "string", "value": "ConfusedByAttribute" },
+        { "kind": "string", "value": "ConfuserEx" }
+      ]
+    },
+    {
+      "id": "compiler.msvc",
+      "name": "Microsoft Visual C/C++",
+      "category": "compiler",
+      "description": "MSVC toolchain detected from linker version plus independent toolchain evidence.",
+      "confidence": 95,
+      "all": [{ "kind": "linker_version", "min": 5.0, "max": 15.99 }],
+      "any": [
+        { "kind": "rich_header", "present": true },
+        { "kind": "pdb_path", "value": ".pdb" },
+        { "kind": "import", "value": "vcruntime140.dll", "target": "library" },
+        { "kind": "import", "value": "msvcp140.dll", "target": "library" },
+        { "kind": "import", "value": "ucrtbase.dll", "target": "library" }
+      ]
+    },
+    {
+      "id": "compiler.msvc_inferred",
+      "name": "Microsoft Visual C/C++ (inferred)",
+      "category": "compiler",
+      "description": "MSVC compiler inferred from a 14.x linker version. Rich header, PDB and VC runtime imports are absent, so the compiler is not proven; this is a conservative inference.",
+      "confidence": 55,
+      "all": [{ "kind": "linker_version", "min": 14.0, "max": 15.99 }],
+      "none": [
+        { "kind": "rich_header", "present": true },
+        { "kind": "pdb_path", "value": ".pdb" },
+        { "kind": "import", "value": "vcruntime140.dll", "target": "library" },
+        { "kind": "import", "value": "msvcp140.dll", "target": "library" },
+        { "kind": "import", "value": "ucrtbase.dll", "target": "library" },
+        { "kind": "dotnet", "present": true },
+        { "kind": "string", "value": "GCC: (" },
+        { "kind": "string", "value": "GCC: (GNU)" },
+        { "kind": "string", "value": "clang version " },
+        { "kind": "string", "value": "rust_begin_unwind" },
+        { "kind": "string", "value": "Go build ID:" },
+        { "kind": "string", "value": "Embarcadero Delphi" },
+        { "kind": "string", "value": "Borland Delphi" },
+        { "kind": "string", "value": "Microsoft Visual Basic" }
+      ]
+    },
+    {
+      "id": "linker.msvc",
+      "name": "Microsoft Linker (link.exe)",
+      "category": "linker",
+      "description": "MSVC linker version and Rich header.",
+      "confidence": 85,
+      "all": [
+        { "kind": "linker_version", "min": 5.0, "max": 15.99 },
+        { "kind": "rich_header", "present": true }
+      ]
+    },
+    {
+      "id": "linker.msvc_version",
+      "name": "Microsoft Linker (link.exe)",
+      "category": "linker",
+      "description": "Microsoft linker 14.x inferred from the PE optional-header linker version when the Rich header is absent.",
+      "confidence": 80,
+      "all": [{ "kind": "linker_version", "min": 14.0, "max": 15.99 }],
+      "none": [
+        { "kind": "rich_header", "present": true },
+        { "kind": "dotnet", "present": true },
+        { "kind": "string", "value": "GCC: (" },
+        { "kind": "string", "value": "GCC: (GNU)" },
+        { "kind": "string", "value": "clang version " },
+        { "kind": "string", "value": "rust_begin_unwind" },
+        { "kind": "string", "value": "Go build ID:" },
+        { "kind": "string", "value": "Embarcadero Delphi" },
+        { "kind": "string", "value": "Borland Delphi" },
+        { "kind": "string", "value": "Microsoft Visual Basic" }
+      ]
+    },
+    {
+      "id": "language.c_cpp_inferred",
+      "name": "C/C++ (inferred)",
+      "category": "language",
+      "description": "C/C++ inferred from a Microsoft 14.x linker version. Compiler-specific metadata may be stripped or packed; this is an inference, not proof of the source language.",
+      "confidence": 45,
+      "all": [{ "kind": "linker_version", "min": 14.0, "max": 15.99 }],
+      "none": [
+        { "kind": "dotnet", "present": true },
+        { "kind": "string", "value": "GCC: (" },
+        { "kind": "string", "value": "GCC: (GNU)" },
+        { "kind": "string", "value": "clang version " },
+        { "kind": "string", "value": "rust_begin_unwind" },
+        { "kind": "string", "value": "Go build ID:" },
+        { "kind": "string", "value": "Embarcadero Delphi" },
+        { "kind": "string", "value": "Borland Delphi" },
+        { "kind": "string", "value": "Microsoft Visual Basic" }
+      ]
+    },
+    {
+      "id": "compiler.gcc",
+      "name": "GCC (MinGW / GNU toolchain)",
+      "category": "compiler",
+      "description": "GCC version string embedded by the GNU toolchain.",
+      "confidence": 85,
+      "any": [
+        { "kind": "string", "value": "GCC: (", "extract_version": true },
+        { "kind": "string", "value": "GCC: (GNU)", "extract_version": true }
+      ]
+    },
+    {
+      "id": "compiler.clang",
+      "name": "Clang / LLVM",
+      "category": "compiler",
+      "description": "Clang or LLVM version string embedded by the toolchain.",
+      "confidence": 88,
+      "any": [
+        { "kind": "string", "value": "clang version ", "extract_version": true },
+        { "kind": "string", "value": "LLVM version " }
+      ]
+    },
+    {
+      "id": "compiler.rust",
+      "name": "Rust",
+      "category": "compiler",
+      "description": "Rust standard library panic/runtime symbols.",
+      "confidence": 90,
+      "any": [
+        { "kind": "string", "value": "rust_begin_unwind" },
+        { "kind": "string", "value": "/rustc/" },
+        { "kind": "string", "value": "RUST_BACKTRACE" },
+        { "kind": "string", "value": "core::panicking" }
+      ]
+    },
+    {
+      "id": "compiler.go",
+      "name": "Go",
+      "category": "compiler",
+      "description": "Go runtime symbols or build ID.",
+      "confidence": 88,
+      "any": [
+        { "kind": "string", "value": "Go build ID:" },
+        { "kind": "string", "value": "runtime.main" },
+        { "kind": "string", "value": "go1." }
+      ]
+    },
+    {
+      "id": "compiler.delphi",
+      "name": "Delphi / Object Pascal",
+      "category": "compiler",
+      "description": "Embarcadero/Borland Delphi runtime markers.",
+      "confidence": 80,
+      "any": [
+        { "kind": "string", "value": "Embarcadero Delphi" },
+        { "kind": "string", "value": "Borland Delphi" },
+        { "kind": "string", "value": "TApplication" }
+      ]
+    },
+    {
+      "id": "compiler.freepascal",
+      "name": "Free Pascal",
+      "category": "compiler",
+      "description": "Free Pascal compiler/runtime marker.",
+      "confidence": 78,
+      "any": [
+        { "kind": "string", "value": "Free Pascal" },
+        { "kind": "string", "value": "FPC " }
+      ]
+    },
+    {
+      "id": "linker.gnu",
+      "name": "GNU ld / gold",
+      "category": "linker",
+      "description": "GNU linker identification string.",
+      "confidence": 75,
+      "any": [
+        { "kind": "string", "value": "GNU ld" },
+        { "kind": "string", "value": "GNU gold" }
+      ]
+    },
+    {
+      "id": "linker.lld",
+      "name": "LLVM lld",
+      "category": "linker",
+      "description": "LLVM lld linker identification string.",
+      "confidence": 75,
+      "any": [
+        { "kind": "string", "value": "LLD " },
+        { "kind": "string", "value": "ld.lld" }
+      ]
+    },
+    {
+      "id": "runtime.dotnet",
+      "name": "Microsoft .NET / CLR",
+      "category": "runtime",
+      "description": "The image contains a CLR runtime header and .NET metadata.",
+      "confidence": 100,
+      "all": [{ "kind": "dotnet", "present": true }]
+    },
+    {
+      "id": "runtime.vcruntime",
+      "name": "Microsoft VC++ runtime",
+      "category": "runtime",
+      "description": "Import of the MSVC 2015+ C runtime.",
+      "confidence": 90,
+      "any": [
+        { "kind": "import", "value": "vcruntime140.dll", "target": "library" },
+        { "kind": "import", "value": "vcruntime140_1.dll", "target": "library" }
+      ]
+    },
+    {
+      "id": "runtime.ucrt",
+      "name": "Universal C Runtime",
+      "category": "runtime",
+      "description": "Import of the Universal CRT.",
+      "confidence": 85,
+      "all": [{ "kind": "import", "value": "ucrtbase.dll", "target": "library" }]
+    },
+    {
+      "id": "installer.nsis",
+      "name": "NSIS",
+      "category": "installer",
+      "description": "Nullsoft Scriptable Install System marker.",
+      "confidence": 95,
+      "any": [
+        { "kind": "string", "value": "Nullsoft Install System" },
+        { "kind": "string", "value": "Nullsoft.NSIS" },
+        { "kind": "string", "value": "NSIS Error" }
+      ]
+    },
+    {
+      "id": "installer.inno",
+      "name": "Inno Setup",
+      "category": "installer",
+      "description": "Inno Setup installer marker.",
+      "confidence": 92,
+      "any": [
+        { "kind": "string", "value": "Inno Setup Setup Data" },
+        { "kind": "string", "value": "Inno Setup" }
+      ]
+    },
+    {
+      "id": "installer.installshield",
+      "name": "InstallShield",
+      "category": "installer",
+      "description": "InstallShield installer string.",
+      "confidence": 80,
+      "any": [{ "kind": "string", "value": "InstallShield" }]
+    }
+  ]
+}

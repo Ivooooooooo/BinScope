@@ -1,0 +1,112 @@
+// Detect It Easy: detection rule file
+// Author: securitystar
+
+// https://en.wikipedia.org/wiki/Arxan_Technologies
+meta("protector", "Arxan");
+
+function detect() {
+    if (PE.is64() && !PE.isNet()) {
+        if (PE.compareEP("40 50 40 51 40 52 40 53 55 56 57 9C 48 83 EC 38 FC B8 01 00 00 00 B9 FF FF 00 00 E0 FE")) {
+            bDetected = true;
+            sVersion = "GuardIT ~2013";
+        } else {
+            var ep = PE.getEntryPointOffset();
+            // For DLLs without an entry point, try the first exported function
+            if (ep <= 0 && PE.isDll()) {
+                ep = getExportFunctionOffsetByIndex(0);
+            }
+
+            ep = skipJumpsAndNops(ep);
+            const rva = PE.compare("48 83 EC 28 E8", ep) ? PE.OffsetToRVA(ep) + PE.readSDword(ep + 5) + 9 : PE.OffsetToRVA(ep);
+
+            if (rva != -1) {
+                var addr = PE.OffsetToVA(PE.RVAToOffset(rva));
+                const limit = 32;
+
+                var pushCount = 0;
+
+                for (var i = 0; i < limit; i++) {
+                    if (PE.getDisasmString(addr).indexOf("PUSH") !== 0) break;
+                    pushCount++;
+                    addr = PE.getDisasmNextAddress(addr);
+                }
+
+                if (pushCount > 3 && PE.getDisasmString(addr).indexOf("LEA RSP,") === 0) {
+                    addr = PE.getDisasmNextAddress(addr);
+
+                    var movupdCount = 0;
+                    for (var i = 0; i < limit; i++) {
+                        if (PE.getDisasmString(addr).indexOf("MOVUPD") !== 0) break;
+                        movupdCount++;
+                        addr = PE.getDisasmNextAddress(addr);
+                    }
+
+                    if (movupdCount > 0 &&
+                        PE.getDisasmString(addr) === "PUSH 0X10" &&
+                        PE.getDisasmString(PE.getDisasmNextAddress(addr)) === "TEST RSP, 0XF") {
+
+                        bDetected = true;
+                        sVersion = "GuardIT ";
+                        sVersion += (pushCount < 14 || movupdCount < 16) ? "12.0+" : "2014-2021";
+                    }
+                }
+            }
+        }
+    }
+
+    return result();
+}
+
+/**
+ * Skips a bounded chain of direct entry-point jumps and NOPs.
+ *
+ * @param {number} offset Initial file offset.
+ * @returns {number} Resolved file offset, or -1 for a cyclic, invalid, or overlong chain.
+ */
+function skipJumpsAndNops(offset) {
+    var rva = PE.OffsetToRVA(offset);
+    var visitedRvas = {};
+    const limit = 256;
+    const fileSize = PE.getSize();
+
+    for (var i = 0; i < limit; i++) {
+        if (rva < 0 || !isFinite(rva) || visitedRvas[rva]) return -1;
+        visitedRvas[rva] = true;
+
+        const currentOffset = PE.RVAToOffset(rva);
+        if (currentOffset < 0 || currentOffset >= fileSize) return -1;
+
+        const byte = PE.readByte(currentOffset);
+        if (byte === 0xE9 || byte === 0xEB) {
+            const displacementSize = byte === 0xE9 ? 4 : 1;
+            const displacementOffset = PE.RVAToOffset(rva + 1);
+            if (displacementOffset !== currentOffset + 1 || displacementOffset + displacementSize > fileSize ||
+                PE.RVAToOffset(rva + displacementSize) !== currentOffset + displacementSize) return -1;
+
+            rva += byte === 0xE9 ? PE.readSDword(displacementOffset) + 5 : PE.readSByte(displacementOffset) + 2;
+        } else if (byte === 0x90) {
+            rva++;
+        } else {
+            return currentOffset;
+        }
+    }
+
+    return -1;
+}
+
+function getExportFunctionOffsetByIndex(index) {
+    const optionalHeaderOffset = PE.read_int32(0x3C) + 4 + 20;
+    // IMAGE_DIRECTORY_ENTRY_EXPORT is the first entry; no index needed
+    const exportDirRva = PE.read_uint32(optionalHeaderOffset + (PE.is64() ? 0x70 : 0x60));
+    const exportDirOffset = exportDirRva !== 0 ? PE.RVAToOffset(exportDirRva) : -1;
+    if (exportDirOffset !== -1) {
+        const numberOfFunctions = PE.read_uint32(exportDirOffset + 20);
+        if (index >= 0 && index < numberOfFunctions) {
+            const addressOfFunctions = PE.read_uint32(exportDirOffset + 28);
+            const functionRva = PE.read_uint32(PE.RVAToOffset(addressOfFunctions + index * 4));
+            return PE.RVAToOffset(functionRva);
+        }
+    }
+
+    return -1;
+}

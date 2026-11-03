@@ -1,0 +1,17 @@
+// Detect It Easy: detection rule file
+
+// Author: DosX
+// GitHub: https://github.com/DosX-dev
+// Website: https://dosx.su
+// Telegram: @DosX_dev
+
+// https://github.com/starkbank/ecdsa-dotnet
+meta("library", "Starkbank ECDSA");
+
+function detect() {
+    if (PE.isNetObjectPresent("StarkbankEcdsa")) {
+        bDetected = true;
+    }
+
+    return result();
+}

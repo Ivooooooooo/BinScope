@@ -1,0 +1,18 @@
+// Detect It Easy: detection rule file
+
+// Author: DosX
+// GitHub: https://github.com/DosX-dev
+// Website: https://dosx.su
+// Telegram: @DosX_dev
+
+// https://www.gapotchenko.com/eazfuscator.net
+meta("protector", "EazFuscator");
+
+function detect() {
+    bDetected =
+        PE.isNet() &&
+        PE.isSignaturePresent(PE.section[0].FileOffset, Math.min(PE.section[0].FileSize, 1024), "'fefef'") &&
+        PE.isSignatureInSectionPresent(0, "00 E2 80 ** E2 80 ** E2 80 ** E2 80 ** E2 80 ** E2 80 ** E2 80 ** E2 80 ** E2 80 ** E2 80 **");
+
+    return result();
+}

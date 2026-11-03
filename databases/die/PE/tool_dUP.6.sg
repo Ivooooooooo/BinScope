@@ -1,0 +1,21 @@
+// Detect It Easy: detection rule file
+// Author: hypn0 <hypn0@mail.ru>
+
+// https://crack-tool.at.ua/load/patchgens/diablo2oo2_39_s_universal_patcher_dup2_v2_25_v2_26/13-1-0-6
+meta("tool", "dUP diablo2oo2's Universal Patcher");
+
+function detect() {
+    if (PE.compareEP("e8$$$$$$$$558bec81c4........5657536a..e8........a3........c745..........6a..68")) {
+        if (PE.getNumberOfResources() > 0) {
+            nOffset = PE.getResourceNameOffset("DLL"); {
+                if (PE.compare("a2", nOffset)) {
+                    sVersion = "2.0";
+                    bDetected = true;
+                }
+            }
+        }
+
+    }
+
+    return result();
+}

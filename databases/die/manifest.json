@@ -1,0 +1,13 @@
+﻿{
+  "source": "Detect It Easy official signature database",
+  "repository": "https://github.com/horsicq/Detect-It-Easy",
+  "release": "https://github.com/horsicq/Detect-It-Easy/releases/tag/db",
+  "releaseTag": "db",
+  "releasedAt": "2026-04-16T14:23:53Z",
+  "archive": "db.zip",
+  "archiveSha256": "6c16af091b984e74b782bfe74a880cf95bc9a34043a18191616ce15c8862cebd",
+  "license": "MIT",
+  "installedScope": "db/PE/*.sg",
+  "installedAt": "2026-10-28T00:00:00Z",
+  "fileCount": 910
+}

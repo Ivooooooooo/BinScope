@@ -1,0 +1,20 @@
+// Detect It Easy: detection rule file
+
+// Author: DosX
+// GitHub: https://github.com/DosX-dev
+// Website: https://dosx.su
+// Telegram: @DosX_dev
+
+// https://github.com/google/brotli
+meta("library", "Brotli");
+
+function detect() {
+    if (PE.isLibraryPresentExp(/brotli(?:dec|enc)/i)) {
+        bDetected = true;
+    } else if (PE.isExportFunctionPresentExpFastAnchor("brotli", /^Brotli(?:Decoder|Encoder)/)) {
+        sOptions = "static"; // EAT
+        bDetected = true;
+    }
+
+    return result();
+}

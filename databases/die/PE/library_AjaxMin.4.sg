@@ -1,0 +1,17 @@
+// Detect It Easy: detection rule file
+
+// Author: DosX
+// GitHub: https://github.com/DosX-dev
+// Website: https://dosx.su
+// Telegram: @DosX_dev
+
+// http://ajaxmin.codeplex.com/
+meta("library", "AjaxMin");
+
+function detect() {
+    if (PE.isNetObjectPresent("AjaxMin")) {
+        bDetected = true;
+    }
+
+    return result();
+}

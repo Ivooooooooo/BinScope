@@ -1,0 +1,39 @@
+[package]
+name = "binscope-app"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "BinScope desktop application (Tauri shell)"
+
+[lib]
+name = "binscope_app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-single-instance = "2"
+winreg = "0.56"
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+binscope-common = { workspace = true }
+binscope-core = { workspace = true }
+binscope-hashing = { workspace = true }
+binscope-batch = { workspace = true }
+binscope-rules = { workspace = true }
+binscope-strings = { workspace = true }
+binscope-yara = { workspace = true }
+binscope-updates = { workspace = true }
+binscope-virustotal = { workspace = true }
+keyring = { version = "3.6", features = ["windows-native"] }
+
+[target.'cfg(windows)'.dependencies]
+webview2-com = "0.39"
+
+[dev-dependencies]
+tempfile = { workspace = true }

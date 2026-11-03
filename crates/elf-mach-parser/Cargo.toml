@@ -1,0 +1,13 @@
+[package]
+name = "binscope-elfmach"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "ELF and Mach-O analysis for BinScope"
+
+[dependencies]
+binscope-common = { workspace = true }
+serde = { workspace = true }
+goblin = { workspace = true }
+thiserror = { workspace = true }

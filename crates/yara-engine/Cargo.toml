@@ -1,0 +1,18 @@
+[package]
+name = "binscope-yara"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "YARA-X rule compilation and scanning for BinScope"
+
+[dependencies]
+binscope-common = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+sha2 = { workspace = true }
+yara-x = { version = "1.22" }
+
+[dev-dependencies]
+tempfile = { workspace = true }

@@ -1,0 +1,33 @@
+// Detect It Easy: detection rule file
+
+// Author: DosX
+// GitHub: https://github.com/DosX-dev
+// Website: https://dosx.su
+// Telegram: @DosX_dev
+
+// https://www.lua.org/download.html
+meta("library", "Lua Runtime");
+
+function detect() {
+    if (PE.isLibraryPresentExp(/^lua5/i)) {
+        sLang = "Lua";
+        sVersion = "5.X";
+        bDetected = true;
+    } else if (PE.isExportFunctionPresentExpFastAnchor("lua", /^lua(L)?_/)) {
+        sOptions = "static"; // EAT
+        bDetected = true;
+
+        var rdataSection = PE.section[".rdata"];
+
+        if (rdataSection) {
+            var embeddedLuaVersion = PE.findSignature(rdataSection.FileOffset, rdataSection.FileSize, "'Lua ' %% '.' %%");
+
+            if (embeddedLuaVersion !== -1) {
+                sVersion = PE.getString(embeddedLuaVersion + 4, 3);
+            }
+        }
+    }
+
+
+    return result();
+}

@@ -1,0 +1,35 @@
+// Detect It Easy: detection rule file
+// Author: KDSS-Research (koffidev365supp@gmail.com)
+
+// Rewritten by DosX
+// GitHub: https://github.com/DosX-dev
+// Website: https://dosx.su
+// Telegram: @DosX_dev
+
+includeScript("python");
+
+// https://github.com/Nuitka/Nuitka
+meta("packer", "Nuitka");
+
+function detect() {
+    var dataSection = PE.section[".rdata"];
+
+    if (dataSection) {
+        var dataSectionOffset = dataSection.FileOffset,
+            dataSectionSize = dataSection.FileSize;
+
+        var pythonRuntimeLibraryName = PE.isLibraryPresentExp(/^python/i);
+
+        if (pythonRuntimeLibraryName && PE.findString(dataSectionOffset, dataSectionSize, "__nuitka_version__") !== -1) {
+            sVersion = getPythonVersionByDll(pythonRuntimeLibraryName[0]);
+            bDetected = true;
+        } else if (PE.findString(dataSectionOffset, dataSectionSize, "NUITKA_ONEFILE_PARENT") !== -1) {
+            sOptions = "OneFile";
+            bDetected = true;
+        }
+    }
+
+    sLang = "Python";
+
+    return result();
+}

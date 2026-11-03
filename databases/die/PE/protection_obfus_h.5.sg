@@ -1,0 +1,21 @@
+// Detect It Easy: detection rule file
+
+// Author: DosX
+// GitHub: https://github.com/DosX-dev
+// Website: https://dosx.su
+// Telegram: @DosX_dev
+
+// https://github.com/DosX-dev/obfus.h
+meta("protection", "obfus.h");
+
+function detect() {
+    if (PE.getCompilerVersion() !== "6.0") return;
+
+    if (PE.isSectionNamePresentExp(/^\.obfh(?:[0-9]{2})?$/) || PE.isExportFunctionPresent("WhatSoundDoesACowMake")) {
+        bDetected = true;
+    }
+
+    sLang = "C";
+
+    return result();
+}

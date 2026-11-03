@@ -1,0 +1,27 @@
+[package]
+name = "binscope-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Analysis orchestration and normalized report model for BinScope"
+
+[dependencies]
+binscope-common = { workspace = true }
+binscope-hashing = { workspace = true }
+binscope-strings = { workspace = true }
+binscope-file-detect = { workspace = true }
+binscope-pe = { workspace = true }
+binscope-authenticode = { workspace = true }
+binscope-elfmach = { workspace = true }
+binscope-dotnet = { workspace = true }
+binscope-signatures = { workspace = true }
+binscope-yara = { workspace = true }
+binscope-rules = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

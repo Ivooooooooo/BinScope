@@ -1,0 +1,17 @@
+[package]
+name = "binscope-batch"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Bounded, cancellable batch analysis jobs for BinScope"
+
+[dependencies]
+binscope-common = { workspace = true }
+binscope-core = { workspace = true }
+binscope-hashing = { workspace = true }
+serde = { workspace = true }
+chrono = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

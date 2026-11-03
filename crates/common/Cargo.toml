@@ -1,0 +1,11 @@
+[package]
+name = "binscope-common"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Shared limits, cancellation and checked binary-reading utilities for BinScope"
+
+[dependencies]
+serde = { workspace = true }
+thiserror = { workspace = true }

@@ -1,0 +1,57 @@
+// Detect It Easy: detection rule file
+
+// Author: DosX
+// GitHub: https://github.com/DosX-dev
+// Website: https://dosx.su
+// Telegram: @DosX_dev
+
+// https://en.wikipedia.org/wiki/Rust_(programming_language)
+meta("compiler", "Rust");
+
+function detect() {
+    if (PE.isNet()) return; // Doesn't support .NET
+
+    var rdataSection = PE.section[".rdata"];
+
+    if (rdataSection) {
+        var rustModuleOffset = PE.findSignature(rdataSection.FileOffset, Math.min(0x5000, rdataSection.FileSize), "'mod.rs'"),
+            rustSourceAnchorSeparator = rustModuleOffset !== -1 ? PE.readByte(rustModuleOffset - 1) : undefined;
+
+        if (rustModuleOffset !== -1 && (rustSourceAnchorSeparator === 0x5C || rustSourceAnchorSeparator === 0x2F)) { // 0x5C = '\', 0x2F = '/'
+            var rdataSectionEndOffset = rdataSection.FileOffset + rdataSection.FileSize,
+                currentSearchOffset = rustModuleOffset,
+                rustSourcePathPattern = "%% %% %% %% %% %% %% %% %% %% %% '.rs' 00",
+                rustSourcePathPatternSize = 15;
+
+            for (var i = 0; i < 7; i++) {
+                var currentSearchSize = Math.min(0x1000, rdataSectionEndOffset - currentSearchOffset);
+
+                if (currentSearchSize < rustSourcePathPatternSize) break;
+
+                currentSearchOffset = PE.findSignature(currentSearchOffset, currentSearchSize, rustSourcePathPattern);
+
+                if (currentSearchOffset === -1) break;
+
+                currentSearchOffset += rustSourcePathPatternSize;
+            }
+
+            if (i === 7) bDetected = true;
+        }
+    }
+
+    if (!bDetected) {
+        if (PE.isLibraryPresentExp(/^std-[0-9a-fA-F]{8,16}(\.dll)?$/) || PE.isFunctionPresent("__rust_dealloc")) {
+            bDetected = true;
+
+            _setResult("library", "Rust Runtime", String(), "dynamic");
+        }
+    }
+
+    if (bDetected && PE.isRichSignaturePresent() && PE.compareEP(PE.is64() ? "4883EC28" : "83EC28")) { // sub eax/rsp, 0x28
+        sOptions = "MSVC";
+    }
+
+    sLang = "Rust";
+
+    return result();
+}
