@@ -143,7 +143,7 @@ Remove-Staging $githubDir
 New-Item -ItemType Directory -Force -Path $githubDir | Out-Null
 
 $rootFiles = @(
-    "Cargo.toml", "Cargo.lock", "LICENSE", "README.md", ".gitignore", ".gitattributes"
+    "Cargo.toml", "Cargo.lock", "LICENSE", "README.md", "README.es.md", ".gitignore", ".gitattributes"
 )
 foreach ($file in $rootFiles) { Copy-File $file $githubDir }
 

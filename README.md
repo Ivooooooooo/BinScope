@@ -1,55 +1,57 @@
 # BinScope
 
-Analizador estático de binarios para Windows, escrito en Rust con interfaz Tauri + React. Inspecciona PE/COFF (EXE, DLL, SYS), ensamblados .NET, ELF, Mach-O, archivos comprimidos, scripts y archivos desconocidos **sin ejecutarlos ni cargar sus bibliotecas**.
+**English** | [Español](README.es.md)
 
-BinScope prioriza evidencia explícita, límites de recursos verificables y separación de fuentes de detección. Cada resultado conserva el motor que lo produjo, su procedencia y su nivel de certeza.
+Static binary analyzer for Windows, written in Rust with a Tauri + React interface. It inspects PE/COFF (EXE, DLL, SYS), .NET assemblies, ELF, Mach-O, archives, scripts and unknown files **without executing them or loading their libraries**.
 
-## Funciones principales
+BinScope prioritizes explicit evidence, verifiable resource limits, and separation between detection sources. Every result keeps the engine that produced it, its provenance, and its certainty level.
 
-- Detección de formato por contenido, sin depender de la extensión.
-- Parser PE propio con cabeceras, secciones, directorios, imports, delay imports, exports, recursos, versión, manifiesto, PDB, Rich header, TLS, overlay, Authenticode estructural y CLR.
-- Anomalías PE deterministas (`BS-PE-*`) con severidad, evidencia tipada, offset/RVA/sección, esperado vs observado y notas de falsos positivos.
-- Metadatos .NET/CLR: COR20, raíz BSJB, streams, tablas Module/Assembly/AssemblyRef, versión, flags, strong name y entry point.
-- ELF y Mach-O con arquitectura, entry point, secciones/segmentos, bibliotecas, imports/exports, build-id y runpaths.
-- Hashes SHA-256, SHA-1 y MD5 en streaming.
-- Extracción de strings ASCII, UTF-8 multibyte y UTF-16LE con offsets exactos, sección y clasificación por evidencia.
-- Detección de compiladores, linkers, packers, protectores, runtimes e instaladores mediante firmas internas, DIE, PE-bear/PEiD, YARA-X y heurísticas estructurales.
-- Detección de Themida/WinLicense mediante los patrones de entry point y las condiciones estructurales portadas de `protector_Themida.2.sg`, marcadas como evidencia exacta o heurística fuerte, nunca como prueba de malware.
-- YARA-X con reglas internas y repositorios externos, procedencia por archivo, revisión de conjunto, offsets reales, metadatos y diagnóstico de reglas rechazadas.
-- Batch Analysis con recorrido acotado, concurrencia configurable, cancelación cooperativa, deduplicación por SHA-256 y exportación CSV/JSON.
-- Integración opcional con el menú contextual del Explorador de Windows por usuario.
-- VirusTotal opcional y desactivado por defecto; solo envía el SHA-256 tras confirmación.
+## Main features
 
-## Fuentes de detección
+- Content-based format detection, independent of file extension.
+- Native PE parser covering headers, sections, directories, imports, delay imports, exports, resources, version info, manifest, PDB, Rich header, TLS, overlay, structural Authenticode and CLR.
+- Deterministic PE anomalies (`BS-PE-*`) with severity, typed evidence, offset/RVA/section, expected vs. observed values, and false-positive notes.
+- .NET/CLR metadata: COR20, BSJB root, streams, Module/Assembly/AssemblyRef tables, version, flags, strong name and entry point.
+- ELF and Mach-O with architecture, entry point, sections/segments, libraries, imports/exports, build-id and runpaths.
+- SHA-256, SHA-1 and MD5 hashing in streaming mode.
+- ASCII, multibyte UTF-8 and UTF-16LE string extraction with exact offsets, section attribution and evidence-based classification.
+- Detection of compilers, linkers, packers, protectors, runtimes and installers through internal signatures, DIE, PE-bear/PEiD, YARA-X and structural heuristics.
+- Themida/WinLicense detection using the entry-point patterns and structural conditions ported from `protector_Themida.2.sg`, marked as exact evidence or strong heuristic, never as proof of malware.
+- YARA-X with internal rules and external repositories, per-file provenance, rule-set revision, real offsets, metadata and diagnostics for rejected rules.
+- Batch Analysis with bounded traversal, configurable concurrency, cooperative cancellation, SHA-256 deduplication and CSV/JSON export.
+- Optional per-user integration with the Windows Explorer context menu.
+- Optional VirusTotal integration, disabled by default; it sends only the SHA-256 after confirmation.
 
-Cada detección indica su motor y no se mezcla con las demás:
+## Detection sources
 
-1. Firmas internas JSON.
-2. Firmas reales de Detect It Easy mediante el subconjunto `compareEP` documentado.
-3. PE-bear / PEiD UserDB (`SIG.txt`), descargado aparte por su licencia.
-4. YARA-X externo instalado por el usuario.
-5. YARA-X interno incluido en el repositorio.
-6. Heurísticas estructurales y heurísticas DIE acotadas (Themida, VMProtect).
+Every detection reports its engine and is not mixed with the others:
 
-Los resultados incluyen `engine`, `vendor`, `certainty`, `source`, evidencia, offsets y notas de compatibilidad cuando corresponde. Las detecciones de distinta procedencia no se fusionan perdiendo el origen.
+1. Internal JSON signatures.
+2. Real Detect It Easy signatures through the documented `compareEP` subset.
+3. PE-bear / PEiD UserDB (`SIG.txt`), downloaded separately because of its license.
+4. External YARA-X rules installed by the user.
+5. Internal YARA-X rules bundled with the repository.
+6. Structural heuristics and bounded DIE heuristics (Themida, VMProtect).
+
+Results include `engine`, `vendor`, `certainty`, `source`, evidence, offsets and compatibility notes when applicable. Detections from different sources are never merged in a way that loses their origin.
 
 ## YARA-X
 
-- Compilación real de `.yar` y `.yara` con el compilador YARA-X enlazado.
-- Descubrimiento recursivo, protección contra symlinks, límites de archivos y tamaño.
-- Un archivo inválido no descarta las reglas válidas.
-- Caché en proceso por revisión de contenido y versión del motor.
-- Separación explícita entre coincidencias internas y externas.
-- Evidencia con identificador de patrón, offset real, longitud, bytes y representación imprimible.
-- Diagnóstico visible de errores de compilación y reglas rechazadas.
+- Real compilation of `.yar` and `.yara` files with the linked YARA-X compiler.
+- Recursive discovery, symlink protection, and file-count and size limits.
+- One invalid file does not discard valid rules.
+- In-process cache keyed by content revision and engine version.
+- Explicit separation between internal and external matches.
+- Evidence with pattern identifier, real offset, length, bytes and printable representation.
+- Visible diagnostics for compilation errors and rejected rules.
 
-## Compilar y ejecutar
+## Build and run
 
-Requisitos:
+Verified requirements:
 
-- Rust 1.99 o superior (`x86_64-pc-windows-msvc`).
-- Visual Studio Build Tools 2022 con carga de trabajo C++.
-- Node.js 24 y npm 11.
+- Rust 1.99 or newer (`x86_64-pc-windows-msvc`).
+- Visual Studio Build Tools 2022 with the C++ workload.
+- Node.js 24 and npm 11.
 - WebView2 Runtime.
 
 ```powershell
@@ -66,24 +68,68 @@ npx --prefix frontend tauri dev
 npx --prefix frontend tauri build
 ```
 
-## Seguridad y límites
+Release binaries are written to `target/release/` and the NSIS installer to `target/release/bundle/nsis/`.
 
-- El archivo analizado nunca se ejecuta, ni se cargan sus DLL, ni se interpreta IL.
-- Todos los parsers usan un `Reader` con comprobación de límites; el código propio no usa `unsafe`.
-- Límites por defecto: 512 MiB para parseo estructurado, 4 GiB para streaming, 180 s de presupuesto, 100 000 strings / 16 MiB de texto, 96 secciones y 65 536 entradas.
-- YARA-X tiene timeout, límite de archivos y tamaño máximo por regla.
-- Los errores de un módulo se registran y el resto del análisis continúa cuando es posible.
-- VirusTotal está apagado por defecto y la API key se guarda en Windows Credential Manager, nunca en el informe ni en el código.
+## Portable package
 
-Limitaciones conocidas:
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\package-release.ps1
+```
 
-- No hay intérprete DiE-JS completo; solo el subconjunto `compareEP` y heurísticas acotadas.
-- No hay muestras reales de Themida ni el ejecutable `diec` en el repositorio; la cobertura Themida se valida con fixtures sintéticos.
-- La heurística Themida estructural puede producir falsos positivos y se marca como `strong_heuristic`.
-- No hay desensamblado ni análisis dinámico.
-- Authenticode informa estructura y confianza, pero no convierte la firma en una garantía de seguridad.
-- PE-bear `SIG.txt` no se redistribuye por GPLv2; se descarga explícitamente desde la aplicación.
+It produces:
 
-## Licencia
+- `release\portable\` with `BinScope.exe`, `binscope.portable`, rules, signature databases and checksums.
+- `release\github\` with the source tree ready to publish.
+- `release\BinScope-Portable-0.1.0.zip`.
 
-MIT. Las dependencias conservan sus licencias. Las reglas y fixtures originales del repositorio se distribuyen bajo MIT. Las bases de terceros mantienen su licencia y atribución en `LICENSE` y en sus propios archivos de licencia.
+Settings, rules, history and the WebView2 cache are stored in the user profile (`%APPDATA%\com.binscope.analyzer` and `%LOCALAPPDATA%\com.binscope.analyzer`), not inside the portable folder.
+
+## Structure
+
+```text
+src-tauri/                 Tauri shell, commands, settings, Windows integration
+frontend/                  React + TypeScript + Vite
+crates/common/             Bounds-checked reader, cancellation, deadline, entropy
+crates/hashing/            SHA-256/SHA-1/MD5
+crates/strings/            Streaming string extraction
+crates/file-detect/        Magic-based format detection
+crates/pe-parser/          PE parser and fixture generator
+crates/elf-mach-parser/    ELF and Mach-O
+crates/dotnet/             CLR/BSJB metadata
+crates/signatures/         JSON, DIE, PE-bear signatures and heuristics
+crates/yara-engine/        YARA-X compilation and scanning
+crates/rules/              Inventory, categories, profiles and sources
+crates/updates/            Verified downloads and atomic activation
+crates/core/               Orchestration, report, export, CLI and benchmark
+databases/die/             PE signatures from the official DIE release (MIT)
+databases/signatures/      Built-in JSON database
+rules/yara/                Internal YARA rules
+tests/fixtures/            Synthetic benign binaries
+tests/malformed-files/     Synthetic invalid corpus
+```
+
+## Interface
+
+The interface is a desktop workbench built for dense analysis: typographic rail, specimen header, ruled sections, technical tables, YARA inspector, and explicit loading, error and empty states. It ships with Light, Dark and System themes using distinct mineral palettes.
+
+## Security and limits
+
+- The analyzed file is never executed, its DLLs are never loaded, and IL is never interpreted.
+- All parsers use a bounds-checked `Reader`; first-party code does not use `unsafe`.
+- Default limits: 512 MiB for structured parsing, 4 GiB for streaming, 180 s time budget, 100,000 strings / 16 MiB of text, 96 sections and 65,536 entries.
+- YARA-X has a timeout, file-count limit and maximum size per rule.
+- Module errors are recorded and the rest of the analysis continues when possible.
+- VirusTotal is disabled by default; the API key is stored in Windows Credential Manager, never in the report or source code.
+
+Known limitations:
+
+- There is no full DiE-JS interpreter; only the `compareEP` subset and bounded heuristics.
+- No real Themida samples or the `diec` executable are included in the repository; Themida coverage is validated with synthetic fixtures.
+- The structural Themida heuristic can produce false positives and is marked `strong_heuristic`.
+- There is no disassembly or dynamic analysis.
+- Authenticode reports structure and trust, but a signature is not a security guarantee.
+- PE-bear `SIG.txt` is not redistributed under GPLv2; it is downloaded explicitly from the application.
+
+## License
+
+MIT. Dependencies retain their own licenses. Original rules and fixtures in this repository are distributed under MIT. Third-party databases retain their licenses and attribution in `LICENSE` and their own license files.
